@@ -1,7 +1,7 @@
 // Peer dependecies
 /* eslint-disable import/no-unresolved, import/extensions */
 import React, { Component } from 'react';
-import { View, Text, Animated, PanResponder, StyleSheet } from 'react-native';
+import { View, Text, Animated, PanResponder, StyleSheet, SafeAreaView } from 'react-native';
 /* eslint-enable import/no-unresolved, import/extensions */
 
 import messageManager from './messageManager';
@@ -12,25 +12,28 @@ const MIN_SWIPE_VELOCITY = 0.15;
 const styles = StyleSheet.create({
   root: {
     position: 'absolute',
-    top: 0,
     left: 0,
     right: 0,
+    top: 0
   },
+
   message: {
     paddingVertical: 15,
     paddingHorizontal: 20,
     justifyContent: 'center',
-    backgroundColor: 'grey',
+    backgroundColor: 'grey'
   },
   messageText: {
     color: 'white',
+    fontSize: 18
   },
 });
 
-function Message({ message }) {
+function Message({ message, messageContainer, messageText }) {
   return (
-    <View style={styles.message}>
-      <Text style={styles.messageText}>{message}</Text>
+
+    <View style={[styles.message, messageContainer]}>
+      <Text style={messageText || styles.messageText}>{message}</Text>
     </View>
   );
 }
@@ -96,15 +99,18 @@ export default class MessageBar extends Component {
     }
   }
   render() {
-    const { messageComponent: MessageComponent, slideAnimationOffset } = this.getConfig();
+    let { messageComponent: MessageComponent, slideAnimationOffset, messageContainer, messageText } = this.getConfig();
+
     const translateY = this.state.isVisibleAnimValue.interpolate({
       inputRange: [0, 1],
-      outputRange: [-slideAnimationOffset, 0],
+      outputRange: [slideAnimationOffset, 0],
+
     });
     const opacity = this.state.isVisibleAnimValue.interpolate({
       inputRange: [0, 1],
       outputRange: [0, 1],
     });
+    console.log(this.getConfig())
     return (
       <Animated.View
         style={[
@@ -113,11 +119,11 @@ export default class MessageBar extends Component {
           { opacity },
         ]}
       >
-        <View {...this.panResponder.panHandlers}>
+        <SafeAreaView {...this.panResponder.panHandlers}>
           {this.state.message &&
-            <MessageComponent message={this.state.message.message}/>
+            <MessageComponent message={this.state.message.message} messageContainer={messageContainer} messageText={messageText} />
           }
-        </View>
+        </SafeAreaView>
       </Animated.View>
     );
   }
@@ -126,8 +132,11 @@ export default class MessageBar extends Component {
 MessageBar.defaultProps = {
   messageComponent: Message,
   duration: 1000,
-  slideAnimationOffset: 40,
+  slideAnimationOffset: -40,
   showAnimationDuration: 255,
   hideAnimationDuration: 255,
   closeOnSwipe: true,
+  position: 'top',
+  messageContainer: null,
+  messageText: null,
 };
